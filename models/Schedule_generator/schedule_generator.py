@@ -43,7 +43,7 @@ def schedule_employees(file_path):
             for s in all_shifts:
                 shifts[(x, d, s)] = model.NewBoolVar(f'shift_{x}_{d}_{s}')
                 
-    print("Variables and model initialized")
+    #print("Variables and model initialized")
     
     ##### constraints ----------------------------------#######
     ## constraint: minimum 44 hrs (22 shifts) per week for full-timers
@@ -84,13 +84,10 @@ def schedule_employees(file_path):
             model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 4)
         
     
-    print("Constraints added")
+    #print("Constraints added")
 
 
 ###------------------------------------####
-
-
-
     cost = 0
     for x in chef:
         for d in all_days:
@@ -137,9 +134,9 @@ def schedule_employees(file_path):
                     else:
                         cost += shifts[(x, d, s)] * cost_parttimer_weekend
     model.minimize(cost)
-    print("Objective function added")
+    #print("Objective function added")
         
-    print("Model solving...")
+    #print("Model solving...")
         
 
     solver = cp_model.CpSolver()
@@ -182,33 +179,3 @@ def schedule_employees(file_path):
 if __name__ == "__main__":
     file_path = 'test_data.csv'  # Update this path
     schedule_employees(file_path)
-
-    
-    
-    """
-    ## constraint: each shift has exactly x staff based on the demand
-    for d in all_days:
-        for s in all_shifts:
-            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (df[(df['day'] == d) & (df['shift'] == s)]['staff_required'].iloc[0]))
-            
-    ## constraint: each staff can only work no more than 4 shifts per day
-    for x in all_employee:
-        for d in all_days:
-            model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 4)
-
-    ## constraint: each staff can only work 1 shift at a time
-    for x in all_employee:
-        for s in all_shifts:
-            model.add(sum([shifts[(x, d, s)] for d in all_days]) <= 1)
-    
-"""
-    
-            
-    ##### Objective Function ----------------------------------#######
-
-""" cannot meet
-            
-## constraint: maximum 36 hrs (18 shifts) per week for part-timers
-    for x in parttimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 18)
-"""
