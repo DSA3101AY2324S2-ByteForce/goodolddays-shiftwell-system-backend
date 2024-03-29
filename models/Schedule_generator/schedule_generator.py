@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 def schedule_employees(file_path):
     
-    print("Scheduling employees start")
+    #print("Scheduling employees start")
     
     ##### input Data ------------------------------------####
     df = pd.read_csv(file_path)
@@ -16,7 +16,7 @@ def schedule_employees(file_path):
     num_days = 7
     all_employee = [1,2,3,4,5,6,7,8,9,10]
     all_shifts = [1, 2, 3, 4, 5, 6]
-    all_days = [1,2,3,4,5,6,7]
+    all_days = df['day_of_week'].unique()
 
     fulltimers = [1,2,3,4,5] ## ids of full-time employees
     parttimers = [6,7,8,9,10] ## ids of part-time employees
@@ -53,11 +53,11 @@ def schedule_employees(file_path):
     ## constraint: each shift has exactly x staff based on the demand
     for d in all_days:
         for s in all_shifts:
-            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (df[(df['day'] == d) & (df['shift'] == s)]['staff_required'].iloc[0]))
+            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (df[(df['day_of_week'] == d) & (df['shift'] == s)]['demand'].iloc[0]))
             
-    ## constraint: minimum 33 hrs (16 shifts) per week for part-timers
+    ## constraint: minimum 30 hrs (15 shifts) per week for part-timers
     for x in parttimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 16)
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 15)
         
     ## constraint: maximum 48 hrs (24 shifts) per week for full-timers
     for x in fulltimers:
@@ -91,7 +91,7 @@ def schedule_employees(file_path):
     cost = 0
     for x in chef:
         for d in all_days:
-            is_ph = df.loc[(df['day'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
+            is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
             for s in all_shifts:
                 if d < 5:
                     if is_ph == 1:
@@ -106,7 +106,7 @@ def schedule_employees(file_path):
                 
     for x in other_fulltimers:
         for d in all_days:
-            is_ph = df.loc[(df['day'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
+            is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
             for s in all_shifts:
                 if d < 5:
                     if is_ph == 1:
@@ -121,7 +121,7 @@ def schedule_employees(file_path):
                 
     for x in parttimers:
         for d in all_days:
-            is_ph = df.loc[(df['day'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
+            is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'is_ph'].iloc[0]
             for s in all_shifts:
                 if d < 5:
                     if is_ph==1:
@@ -144,7 +144,7 @@ def schedule_employees(file_path):
     status = solver.solve(model)
     
     
-    if status == cp_model.OPTIMAL:
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         print(f"Total cost: {solver.ObjectiveValue()}")
         
         # Create a list to hold the data
@@ -177,5 +177,5 @@ def schedule_employees(file_path):
 
 
 if __name__ == "__main__":
-    file_path = 'test_data.csv'  # Update this path
+    file_path = 'test_1.csv'  # Update this path
     schedule_employees(file_path)
