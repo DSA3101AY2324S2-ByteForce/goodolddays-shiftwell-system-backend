@@ -1,12 +1,12 @@
 from ortools.sat.python import cp_model
 import numpy as np
 import pandas as pd
-def schedule_employees(file_path):
+def schedule_employees(file_path_1, file_path_2):
     
     print("Scheduling employees start")
     
     ##### input Data ------------------------------------####
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path_1)
 
     ##### variables ------------------------------------####
     total_num_staff = 10
@@ -47,9 +47,8 @@ def schedule_employees(file_path):
                 
     print("Variables and model initialized")
     
-    ##### constraints ----------------------------------#######+
-        
-     ## constraint: maximum 38 hrs (19 shifts) per week for part-timers (20,19 can 18 cannot meet)
+    ##### constraints ----------------------------------#######
+    ## constraint: maximum 38 hrs (19 shifts) per week for part-timers (20,19 can 18 cannot meet)
     for x in parttimers:
         model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 19)
         
@@ -67,7 +66,7 @@ def schedule_employees(file_path):
     for d in all_days:
         for s in all_shifts:
             demand = df[(df['day_of_week'] == d) & (df['shift'] == s)]['demand'].iloc[0]
-            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == demand)
+            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (demand -1))
 
    ## constraint at least 2 full-timers per shift
     for d in all_days:
@@ -79,11 +78,16 @@ def schedule_employees(file_path):
         for d in all_days:
             model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 4)
         
-    ## constraint: minimum 44 hrs (22 shifts) per week for full-timers
-    for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 22)
+        
+    ## contraint: pre defined shifts for each employee
+    preference = pd.read_csv(file_path_2)
     
-            
+    for index, row in preference.iterrows():
+        staff = row['Employee']
+        preferred_day = row['day_of_the_week']
+        preferred_shift = row['shift']
+        model.add(shifts[(staff, preferred_day, preferred_shift)] == 1)
+    
     
 
 
@@ -180,8 +184,9 @@ def schedule_employees(file_path):
 
 
 if __name__ == "__main__":
-    file_path = 'test2.csv'  # Update this path
-    schedule_employees(file_path)
+    file_path_1 = 'test2.csv'  # Update this path
+    file_path_2 = 'preference.csv'
+    schedule_employees(file_path_1, file_path_2)
 
     
     
