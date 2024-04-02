@@ -1,12 +1,10 @@
 from ortools.sat.python import cp_model
 import numpy as np
 import pandas as pd
-def schedule_employees(file_path_1, file_path_2):
-    
-    print("Scheduling employees start")
+def schedule_employees(demand_info, staff_preference):
     
     ##### input Data ------------------------------------####
-    df = pd.read_csv(file_path_1)
+    df = demand_info
 
     ##### variables ------------------------------------####
     total_num_staff = 10
@@ -44,8 +42,6 @@ def schedule_employees(file_path_1, file_path_2):
         for d in all_days:
             for s in all_shifts:
                 shifts[(x, d, s)] = model.NewBoolVar(f'shift_{x}_{d}_{s}')
-                
-    print("Variables and model initialized")
     
     ##### constraints ----------------------------------#######
     ## constraint: maximum 38 hrs (19 shifts) per week for part-timers (20,19 can 18 cannot meet)
@@ -80,7 +76,7 @@ def schedule_employees(file_path_1, file_path_2):
         
         
     ## contraint: pre defined shifts for each employee
-    preference = pd.read_csv(file_path_2)
+    preference = staff_preference
     
     for index, row in preference.iterrows():
         staff = row['Employee']
@@ -88,13 +84,8 @@ def schedule_employees(file_path_1, file_path_2):
         preferred_shift = row['shift']
         model.add(shifts[(staff, preferred_day, preferred_shift)] == 1)
     
-    
-
 
 ###------------------------------------####
-
-
-
     cost = 0
     for x in chef:
         for d in all_days:
@@ -141,10 +132,6 @@ def schedule_employees(file_path_1, file_path_2):
                     else:
                         cost += shifts[(x, d, s)] * cost_parttimer_weekend
     model.minimize(cost)
-    print("Objective function added")
-        
-    print("Model solving...")
-        
 
     solver = cp_model.CpSolver()
     solver.parameters.linearization_level = 0
@@ -170,24 +157,12 @@ def schedule_employees(file_path_1, file_path_2):
         
         # Convert the list of dictionaries to a pandas DataFrame
         schedule_df = pd.DataFrame(schedule_data)
-        
-        # Save the DataFrame to a CSV file
-        schedule_df.to_csv('schedule.csv', index=False)
-        print("Schedule saved to schedule.csv")
     else:
         print("No solution found.")
         schedule_df = pd.DataFrame()  # Empty DataFrame if no solution
         
 
     return schedule_df
-
-
-
-if __name__ == "__main__":
-    file_path_1 = 'test2.csv'  # Update this path
-    file_path_2 = 'preference.csv'
-    schedule_employees(file_path_1, file_path_2)
-
     
     
    
