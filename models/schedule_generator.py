@@ -41,10 +41,6 @@ def schedule_employees(df):
     
     ##### constraints ----------------------------------#######
         
-     ## constraint: maximum 38 hrs (19 shifts) per week for part-timers (20,19 can 18 cannot meet)
-    for x in parttimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 19)
-        
     ## constraint: maximum 48 hrs (24 shifts) per week for full-timers
     for x in fulltimers:
         model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 24)
@@ -71,15 +67,13 @@ def schedule_employees(df):
         for d in all_days:
             model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 4)
         
-    ## constraint: minimum 44 hrs (22 shifts) per week for full-timers
-    for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 22)
+    ## constraint: minimum 32 hrs (16 shifts) per week for other full-timers
+    for x in other_fulltimers:
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 16)
+
     
 
 ###------------------------------------####
-
-
-
     cost = 0
     for x in chef:
         for d in all_days:
@@ -153,9 +147,9 @@ def schedule_employees(df):
         schedule_df = pd.DataFrame(schedule_data)
     else:
         print("No solution found.")
-        schedule_df = pd.DataFrame()  # Empty DataFrame if no solution
+        schedule_df = pd.DataFrame()  # Empty DataFrame if no solution 
     
     return schedule_df
-    
-    
+
+
    
