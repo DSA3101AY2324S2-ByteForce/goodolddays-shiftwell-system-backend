@@ -1,18 +1,15 @@
 import pickle
 import pandas as pd
 import json
+import schedule_generator
 
-def predict_mpg(config):
-    ##loading the model from the saved file
-    pkl_filename = "model.pkl"
-    with open(pkl_filename, 'rb') as f_in:
-        model = pickle.load(f_in)
+def predict_shift(config):
 
-    if type(config) == dict:
+    if type(config) == list:
         df = pd.DataFrame(config)
     else:
         df = config
     
-    y_pred = model.predict(df)
+    y_pred = schedule_generator.schedule_employees(df)
     
     return y_pred
