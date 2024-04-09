@@ -1,13 +1,7 @@
 from ortools.sat.python import cp_model
 import numpy as np
 import pandas as pd
-def schedule_employees(file_path):
-    
-    print("Scheduling employees start")
-    
-    ##### input Data ------------------------------------####
-    df = pd.read_csv(file_path)
-
+def schedule_employees(df):
     ##### variables ------------------------------------####
     total_num_staff = 10
     num_parttimers = 5
@@ -44,10 +38,8 @@ def schedule_employees(file_path):
         for d in all_days:
             for s in all_shifts:
                 shifts[(x, d, s)] = model.NewBoolVar(f'shift_{x}_{d}_{s}')
-                
-    print("Variables and model initialized")
     
-    ##### constraints ----------------------------------#######+
+    ##### constraints ----------------------------------#######
         
      ## constraint: maximum 38 hrs (19 shifts) per week for part-timers (20,19 can 18 cannot meet)
     for x in parttimers:
@@ -67,7 +59,7 @@ def schedule_employees(file_path):
     for d in all_days:
         for s in all_shifts:
             demand = df[(df['day_of_week'] == d) & (df['shift'] == s)]['demand'].iloc[0]
-            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == demand)
+            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (demand + 1))
 
    ## constraint at least 2 full-timers per shift
     for d in all_days:
@@ -83,9 +75,6 @@ def schedule_employees(file_path):
     for x in fulltimers:
         model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 22)
     
-            
-    
-
 
 ###------------------------------------####
 
@@ -137,10 +126,6 @@ def schedule_employees(file_path):
                     else:
                         cost += shifts[(x, d, s)] * cost_parttimer_weekend
     model.minimize(cost)
-    print("Objective function added")
-        
-    print("Model solving...")
-        
 
     solver = cp_model.CpSolver()
     solver.parameters.linearization_level = 0
@@ -161,28 +146,16 @@ def schedule_employees(file_path):
                         schedule_data.append({
                             'Day': d,
                             'Shift': s,
-                            'Employee': x
+                            'Staff': x
                         })
         
         # Convert the list of dictionaries to a pandas DataFrame
         schedule_df = pd.DataFrame(schedule_data)
-        
-        # Save the DataFrame to a CSV file
-        schedule_df.to_csv('schedule.csv', index=False)
-        print("Schedule saved to schedule.csv")
     else:
         print("No solution found.")
         schedule_df = pd.DataFrame()  # Empty DataFrame if no solution
-        
-
+    
     return schedule_df
-
-
-
-if __name__ == "__main__":
-    file_path = 'test2.csv'  # Update this path
-    schedule_employees(file_path)
-
     
     
    
