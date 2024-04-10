@@ -32,7 +32,7 @@ def get_without_data():
 def get_predicted_Schedule():
         try:
             data = request.get_json()
-            predict = prediction.predict_shift(data)
+            predict = prediction.predict_shift_economic(data)
             predictOutput = predict
             return {'predict':predictOutput.to_json(orient="split")}
 
