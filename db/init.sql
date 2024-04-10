@@ -15,8 +15,8 @@ CREATE TABLE employee (
 -- Insert some sample data
 INSERT INTO employee (name, employment_status, age, is_chef, hourly_salary)
 VALUES
-    ('John Doe', 'Full Time', 45, FALSE, 25.00),
-    ('Jane Smith', 'Full Time', 42, FALSE, 25.00),
+    ('John Doe', 'Full Time', 45, TRUE, 25.00),
+    ('Jane Smith', 'Full Time', 42, TRUE, 25.00),
     ('Alice Johnson', 'Full Time', 50, FALSE, 25.00),
     ('Bob Williams', 'Full Time', 33, FALSE, 25.00),
     ('Michael Brown', 'Full Time', 53,FALSE, 25.00),

@@ -1,35 +1,37 @@
 from ortools.sat.python import cp_model
 import numpy as np
 import pandas as pd
+import requests
 def schedule_employees(df):
     ##### variables ------------------------------------####
-    total_num_staff = 10
-    num_parttimers = 5
-    num_fulltimers = 5
-    num_shifts = 6
-    num_days = 7
-    all_employee = [1,2,3,4,5,6,7,8,9,10]
-    all_shifts = [1, 2, 3, 4, 5, 6]
+    url = 'http://127.0.0.1:5000/employee'
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        data = response.json()
+    else:
+        print(f"Failed to fetch data. HTTP Status Code: {response.status_code}")
+        return None
+    
+    #employee (name, employment_status, age, is_chef, hourly_salary)
+    df_employee = pd.DataFrame(data)
+    df_employee['name'] = df_employee['name'].astype('string')
+    df_employee['employment_status'] = df_employee['employment_status'].astype('string')
+    df_employee['age'] = df_employee['age'].astype('int')
+    df_employee['is_chef'] = df_employee['is_chef'].astype('bool')
+    df_employee['hourly_salary'] = df_employee['hourly_salary'].astype('int')
+    
     all_days = df['day_of_week'].unique()
-    #increment demand by 1 for each shift
-    df['demand'] = df['demand']
-
-    fulltimers = [1,2,3,4,5] ## ids of full-time employees
-    parttimers = [6,7,8,9,10] ## ids of part-time employees
-    chef = [1,2] ## ids of chefs; assume chefs are all full timer
-    other_fulltimers = [2,3,4] ## ids of other full-timers
-
-    cost_chef = 15 * 2
-    cost_chef_weekend = 16 * 2
-    cost_chef_ph = 17 * 2
-
-    cost_fulltimer = 13 *2 
-    cost_fulltimer_weekend = 14 *2
-    cost_fulltimer_ph = 15 * 2
-
-    cost_parttimer = 11 * 2
-    cost_parttimer_weekend = 12 * 2
-    cost_parttimer_ph = 13 * 2
+   
+    df['demand'] = df['demand'] + 1
+    all_shifts = ['morning' ,'afternoon', 'evening']
+    
+    all_employee = df_employee['name'].tolist()
+    fulltimers = df_employee[df_employee['employment_status'] == 'full-time']['name'].tolist()
+    parttimers = df_employee[df_employee['employment_status'] == 'part-time']['name'].tolist()
+    chef = df_employee[df_employee['is_chef'] == True]['name'].tolist()
+    other_fulltimers = fulltimers.copy() - chef.copy()
+    
     ##### initialize model------------------------------------####
     model = cp_model.CpModel()
 
@@ -39,12 +41,28 @@ def schedule_employees(df):
             for s in all_shifts:
                 shifts[(x, d, s)] = model.NewBoolVar(f'shift_{x}_{d}_{s}')
     
-    ##### constraints ----------------------------------#######+
+    ##### constraints ----------------------------------#######
         
-    ## constraint: maximum 48 hrs (24 shifts) per week for full-timers
+    ## constraint: maximum 48 hrs (12 shifts) per week for full-timers
     for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 24)
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 12)
         
+    ## constraint minimum 40 hrs (10 shifts) per week for full-timers
+    for x in fulltimers:
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 10)
+        
+    ## constraint: minimum 32 hrs (16 shifts) per week for part-timers
+    for x in parttimers:
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 8)
+        
+    ## constraint: maximum 36 hrs (9 shifts) per week for part-timers
+    for x in parttimers:
+        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 9)
+        
+    ## constraint: each staff can only work no more than 2 shifts per day
+    for x in all_employee:
+        for d in all_days:
+            model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 2)
     
     ## constraint: each shift has at leats 1 chef
     for d in all_days:
@@ -55,77 +73,35 @@ def schedule_employees(df):
     for d in all_days:
         for s in all_shifts:
             demand = df[(df['day_of_week'] == d) & (df['shift'] == s)]['demand'].iloc[0]
-            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (demand + 1))
+            model.add(sum([shifts[(x, d, s)] for x in all_employee]) == (demand))
 
    ## constraint at least 2 full-timers per shift
     for d in all_days:
         for s in all_shifts:
             model.add(sum([shifts[(x, d, s)] for x in fulltimers]) >= 2)
-            
-    ## constraint: each staff can only work no more than 4 shifts per day
-    for x in all_employee:
-        for d in all_days:
-            model.add(sum([shifts[(x, d, s)] for s in all_shifts]) <= 4)
-        
-    ## constraint: minimum 44 hrs (22 shifts) per week for full-timers
-    for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 22)
-    
-            
-    
 
+    
 
 ###------------------------------------####
-
-
-
-    cost = 0
-    for x in chef:
+    total_cost = 0
+    for x in all_employee:
+        cost = df_employee.loc[df_employee['name'] == x, 'hourly_salary'].iloc[0]
         for d in all_days:
             flg_is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'flg_is_ph'].iloc[0]
             for s in all_shifts:
                 if d < 5:
                     if flg_is_ph == 1:
-                        cost += shifts[(x, d, s)] * cost_chef_ph
+                        total_cost += shifts[(x, d, s)] * (cost+2) * 4
                     else:
-                        cost += shifts[(x, d, s)] * cost_chef
+                        total_cost += shifts[(x, d, s)] * (cost) * 4
                 elif d >= 5:
                     if flg_is_ph:
-                        cost += shifts[(x, d, s)] * cost_chef_ph
+                        total_cost += shifts[(x, d, s)] * (cost+2) * 4
                     else:
-                        cost += shifts[(x, d, s)] * cost_chef_weekend
+                        total_cost += shifts[(x, d, s)] * (cost+1) * 4
                 
-    for x in other_fulltimers:
-        for d in all_days:
-            flg_is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'flg_is_ph'].iloc[0]
-            for s in all_shifts:
-                if d < 5:
-                    if flg_is_ph == 1:
-                        cost += shifts[(x, d, s)] * cost_fulltimer_ph
-                    else:
-                        cost += shifts[(x, d, s)] * cost_fulltimer
-                elif d >= 5:
-                    if flg_is_ph:
-                        cost += shifts[(x, d, s)] * cost_fulltimer_ph
-                    else:
-                        cost += shifts[(x, d, s)] * cost_fulltimer_weekend
-                
-    for x in parttimers:
-        for d in all_days:
-            flg_is_ph = df.loc[(df['day_of_week'] == d) & (df['shift'] == s), 'flg_is_ph'].iloc[0]
-            for s in all_shifts:
-                if d < 5:
-                    if flg_is_ph==1:
-                        cost += shifts[(x, d, s)] * cost_parttimer_ph
-                    else:
-                        cost += shifts[(x, d, s)] * cost_parttimer
-                elif d >= 5:
-                    if flg_is_ph:
-                        cost += shifts[(x, d, s)] * cost_parttimer_ph
-                    else:
-                        cost += shifts[(x, d, s)] * cost_parttimer_weekend
+    
     model.minimize(cost)
-        
 
     solver = cp_model.CpSolver()
     solver.parameters.linearization_level = 0
@@ -146,20 +122,16 @@ def schedule_employees(df):
                         schedule_data.append({
                             'Day': d,
                             'Shift': s,
-                            'Employee': x
+                            'Staff': x
                         })
         
         # Convert the list of dictionaries to a pandas DataFrame
         schedule_df = pd.DataFrame(schedule_data)
-        
     else:
         print("No solution found.")
-        schedule_df = pd.DataFrame()
-        
-
+        schedule_df = pd.DataFrame()  # Empty DataFrame if no solution 
+    
     return schedule_df
 
 
-    
-    
    

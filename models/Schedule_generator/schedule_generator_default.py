@@ -42,22 +42,8 @@ def schedule_employees(df):
                 shifts[(x, d, s)] = model.NewBoolVar(f'shift_{x}_{d}_{s}')
     
     ##### constraints ----------------------------------#######
-        
-    ## constraint: maximum 48 hrs (12 shifts) per week for full-timers
-    for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 12)
-        
-    ## constraint minimum 40 hrs (10 shifts) per week for full-timers
-    for x in fulltimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 10)
-        
-    ## constraint: minimum 32 hrs (16 shifts) per week for part-timers
-    for x in parttimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) >= 8)
-        
-    ## constraint: maximum 36 hrs (9 shifts) per week for part-timers
-    for x in parttimers:
-        model.add(sum([shifts[(x, d, s)] for d in all_days for s in all_shifts]) <= 9)
+    ## for the default model, relex min&max hours constraints, keep the rest the same
+    
         
     ## constraint: each staff can only work no more than 2 shifts per day
     for x in all_employee:
@@ -69,7 +55,7 @@ def schedule_employees(df):
         for s in all_shifts:
             model.add(sum([shifts[(c,d,s)] for c in chef]) >= 1)
         
-     ## constraint: each shift has exactly x staff based on the demand
+    ## constraint: each shift has exactly x staff based on the demand
     for d in all_days:
         for s in all_shifts:
             demand = df[(df['day_of_week'] == d) & (df['shift'] == s)]['demand'].iloc[0]
