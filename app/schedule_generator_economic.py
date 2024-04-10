@@ -25,7 +25,7 @@ def schedule_employees(df):
     all_days = df['day_of_week'].unique()
    
     df['demand'] = df['demand']
-    all_shifts = ['morning' ,'afternoon', 'evening']
+    all_shifts = ['Morning' ,'Afternoon', 'Evening']
     
     all_employee = df_employee['name'].tolist()
     fulltimers = df_employee[df_employee['employment_status'] == 'Full Time']['name'].tolist()
@@ -99,7 +99,7 @@ def schedule_employees(df):
                         total_cost += shifts[(x, d, s)] * (cost+1) * 4
                 
     
-    model.minimize(cost)
+    model.minimize(total_cost)
 
     solver = cp_model.CpSolver()
     solver.parameters.linearization_level = 0

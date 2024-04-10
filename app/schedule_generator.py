@@ -19,18 +19,17 @@ def schedule_employees(df):
     df_employee['employment_status'] = df_employee['employment_status'].astype('string')
     df_employee['age'] = df_employee['age'].astype('int')
     df_employee['is_chef'] = df_employee['is_chef'].astype('bool')
-    df_employee['hourly_salary'] = df_employee['hourly_salary'].astype('int')
+    df_employee['hourly_salary'] = df_employee['hourly_salary'].astype('float')
     
     all_days = df['day_of_week'].unique()
    
     df['demand'] = df['demand']
-    all_shifts = ['morning' ,'afternoon', 'evening']
+    all_shifts = ['Morning' ,'Afternoon', 'Evening']
     
     all_employee = df_employee['name'].tolist()
     fulltimers = df_employee[df_employee['employment_status'] == 'full-time']['name'].tolist()
     parttimers = df_employee[df_employee['employment_status'] == 'part-time']['name'].tolist()
     chef = df_employee[df_employee['is_chef'] == True]['name'].tolist()
-    other_fulltimers = fulltimers.copy() - chef.copy()
     
     ##### initialize model------------------------------------####
     model = cp_model.CpModel()
@@ -101,7 +100,7 @@ def schedule_employees(df):
                         total_cost += shifts[(x, d, s)] * (cost+1) * 4
                 
     
-    model.minimize(cost)
+    model.minimize(total_cost)
 
     solver = cp_model.CpSolver()
     solver.parameters.linearization_level = 0
