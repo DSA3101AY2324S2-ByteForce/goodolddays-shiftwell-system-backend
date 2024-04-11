@@ -23,13 +23,27 @@ api = Api(app)
 def home():
     return 'Welcome to API for Shift-well System!'
 
-        
+@app.route('/getPredictedDemand', methods=['GET'])
+def get__demand_without_data():
+        return "Please input data for demand prediction."
+
+@app.route('/getPredictedDemand', methods=['POST'])
+def get_predicted_demand():
+        try:
+            data = request.get_json()
+            predict = prediction.predict_shift_economic(data)
+            predictOutput = predict
+            return {'predict':predictOutput.to_json(orient="split")}
+
+        except Exception as error:
+            return {'error': error}
+       
 @app.route('/getPredictedSchedule', methods=['GET'])
-def get_without_data():
+def get_schedule_without_data():
         return "Please input visitor demand for schedule prediction."
         
 @app.route('/getPredictedSchedule', methods=['POST'])
-def get_predicted_Schedule():
+def get_predicted_schedule():
         try:
             data = request.get_json()
             predict = prediction.predict_shift_economic(data)

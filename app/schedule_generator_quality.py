@@ -27,8 +27,8 @@ def schedule_employees(df):
     all_shifts = ['morning' ,'afternoon', 'evening']
     
     all_employee = df_employee['name'].tolist()
-    fulltimers = df_employee[df_employee['employment_status'] == 'full-time']['name'].tolist()
-    parttimers = df_employee[df_employee['employment_status'] == 'part-time']['name'].tolist()
+    fulltimers = df_employee[df_employee['employment_status'] == 'Full Time']['name'].tolist()
+    parttimers = df_employee[df_employee['employment_status'] == 'Part Time']['name'].tolist()
     chef = df_employee[df_employee['is_chef'] == True]['name'].tolist()
 
     

@@ -31,8 +31,8 @@ def schedule_employees(demand_info, staff_preference):
     all_shifts = ['Morning' ,'Afternoon', 'Evening']
     
     all_employee = df_employee['name'].tolist()
-    fulltimers = df_employee[df_employee['employment_status'] == 'full-time']['name'].tolist()
-    parttimers = df_employee[df_employee['employment_status'] == 'part-time']['name'].tolist()
+    fulltimers = df_employee[df_employee['employment_status'] == 'Full Time']['name'].tolist()
+    parttimers = df_employee[df_employee['employment_status'] == 'Par Time']['name'].tolist()
     chef = df_employee[df_employee['is_chef'] == True]['name'].tolist()
     ##### initialize model------------------------------------####
     model = cp_model.CpModel()

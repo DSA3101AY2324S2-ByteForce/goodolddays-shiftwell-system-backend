@@ -1,6 +1,6 @@
 import pandas as pd
 import schedule_generator
-import schedule_generator_economic
+import schedule_generator_default
 
 def predict_shift_economic(config):
 
@@ -9,7 +9,7 @@ def predict_shift_economic(config):
     else:
         df = config
     
-    y_pred = schedule_generator_economic.schedule_employees(df)
+    y_pred = schedule_generator_default.schedule_employees(df)
     
     return y_pred
     
