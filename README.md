@@ -21,7 +21,7 @@ This project aims to enhance the manpower management efficiency of the GoodOldDa
     │
     ├── db          <- files for initialize database and tables
     │
-    └── docker-compose.yml configure application's services
+    └── docker-compose.yml  <-configure application's services
 
 ---
 
