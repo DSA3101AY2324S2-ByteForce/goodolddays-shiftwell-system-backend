@@ -68,6 +68,9 @@ def get_employee():
 @app.route('/employee', methods=['POST'])
 def insert_employee():
     new_employee = request.json
+    print("=========")
+    print(new_employee)
+    print("=========")
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO employee (name, employment_status, age, is_chef, hourly_salary) VALUES (%s, %s, %s, %s, %s)", (new_employee['name'], new_employee['employment_status'], new_employee['age'],new_employee['is_chef'],new_employee['hourly_salary']))
