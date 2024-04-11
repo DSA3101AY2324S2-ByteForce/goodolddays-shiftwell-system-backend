@@ -9,7 +9,7 @@ import mysql.connector
 app = Flask(__name__)
 
 conn = mysql.connector.connect(
-    host="host.docker.internal",
+    host="localhost",
     port=3306,
     user="root",
     password="password",
@@ -39,7 +39,7 @@ def get_predicted_demand():
             return {'error': error}
        
 @app.route('/getPredictedSchedule', methods=['GET'])
-def get_schedule_without_data():
+def get_without_data():
         return "Please input visitor demand for schedule prediction."
         
 @app.route('/getPredictedSchedule', methods=['POST'])
@@ -68,12 +68,9 @@ def get_employee():
 @app.route('/employee', methods=['POST'])
 def insert_employee():
     new_employee = request.json
-    print("=========")
-    print(new_employee)
-    print("=========")
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO employee (name, employment_status, age, is_chef, hourly_salary) VALUES (%s, %s, %s, %s, %s)", (new_employee['name'], new_employee['employment_status'], new_employee['age'],new_employee['is_chef'],new_employee['hourly_salary']))
+        cursor.execute("INSERT INTO epmloyee (name, employment_status, age, is_chef, hourly_salary) VALUES (%s, %s, %s, %s, %s)", (new_employee['name'], new_employee['employment_status'], new_employee['age'],new_employee['is_chef'],new_employee['hourly_salary']))
         conn.commit()
         return jsonify({'message': 'Employee added successfully'}), 201
     except Exception as e:
