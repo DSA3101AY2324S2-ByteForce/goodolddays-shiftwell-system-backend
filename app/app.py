@@ -9,7 +9,7 @@ import mysql.connector
 app = Flask(__name__)
 
 conn = mysql.connector.connect(
-    host="localhost",
+    host="db",
     port=3306,
     user="root",
     password="password",
@@ -24,14 +24,14 @@ def home():
     return 'Welcome to API for Shift-well System!'
 
 @app.route('/getPredictedDemand', methods=['GET'])
-def get__demand_without_data():
+def get__demand_home():
         return "Please input data for demand prediction."
 
 @app.route('/getPredictedDemand', methods=['POST'])
 def get_predicted_demand():
         try:
             data = request.get_json()
-            predict = prediction.predict_shift_economic(data)
+            predict = prediction.predict_shift_default(data)
             predictOutput = predict
             return {'predict':predictOutput.to_json(orient="split")}
 
@@ -39,19 +39,50 @@ def get_predicted_demand():
             return {'error': error}
        
 @app.route('/getPredictedSchedule', methods=['GET'])
-def get_without_data():
-        return "Please input visitor demand for schedule prediction."
+def get_schedule_homoe():
+        return "Welcome to schedule prediction api."
         
-@app.route('/getPredictedSchedule', methods=['POST'])
-def get_predicted_schedule():
-        try:
-            data = request.get_json()
-            predict = prediction.predict_shift_economic(data)
-            predictOutput = predict
-            return {'predict':predictOutput.to_json(orient="split")}
+@app.route('/getPredictedSchedule/default', methods=['GET','POST'])
+def get_predicted_schedule_default():
+        if request.method == 'POST':
+            try:
+                data = request.get_json()
+                predict = prediction.predict_shift_default(data)
+                predictOutput = predict
+                return {'predict':predictOutput.to_json(orient="split")}
 
-        except Exception as error:
-            return {'error': error}
+            except Exception as error:
+                return {'error': error}
+        else:
+            return 'The endpoint for default method to predict staff schedules'
+        
+@app.route('/getPredictedSchedule/economic', methods=['GET','POST'])
+def get_predicted_schedule_economic():
+        if request.method == 'POST':
+            try:
+                data = request.get_json()
+                predict = prediction.predict_shift_economic(data)
+                predictOutput = predict
+                return {'predict':predictOutput.to_json(orient="split")}
+
+            except Exception as error:
+                return {'error': error}
+        else:
+            return 'The endpoint for economic method to predict staff schedules'
+                
+@app.route('/getPredictedSchedule/quality', methods=['GET','POST'])
+def get_predicted_schedule_quality():
+        if request.method == 'POST':
+            try:
+                data = request.get_json()
+                predict = prediction.predict_shift_quality(data)
+                predictOutput = predict
+                return {'predict':predictOutput.to_json(orient="split")}
+
+            except Exception as error:
+                return {'error': error}
+        else:
+            return 'The endpoint for quality method to predict staff schedules'
 
 @app.route('/employee', methods=['GET'])
 def get_employee():
