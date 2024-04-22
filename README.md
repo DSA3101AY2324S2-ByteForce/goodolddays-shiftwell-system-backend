@@ -25,10 +25,10 @@ This project aims to enhance the manpower management efficiency of the GoodOldDa
 
 ---
 
-Run with Docker
+### Run with Docker 🐳
 
-`docker-compose up --build`
+`docker-compose up`
 
-Access the REST API at `localhost:5000`
+### Access the REST API at
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a></p>
+`localhost:5000`
