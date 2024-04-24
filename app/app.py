@@ -2,8 +2,6 @@ from flask import Flask, request, redirect
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask import jsonify
-from tensorflow.keras.models import model_from_json
-import pickle
 import os
 import prediction
 import mysql.connector
@@ -11,7 +9,7 @@ import mysql.connector
 app = Flask(__name__)
 
 conn = mysql.connector.connect(
-    host="db",
+    host="localhost",
     port=3306,
     user="root",
     password="password",
@@ -21,28 +19,25 @@ conn = mysql.connector.connect(
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
 
-# Load the LSTM model
-with open('model_architecture.json', 'r') as json_file: # architecture
-    loaded_model_json = json_file.read()
-model = model_from_json(loaded_model_json)
-model.load_weights('model_weights.weights.h5') # weights
-with open('scaler.pkl', 'rb') as scaler_file:
-    loaded_scaler = pickle.load(scaler_file) # scaler
-
 @app.route('/', methods=['GET'])
 def home():
-    return 'Welcome to API for Shift-well System!'
+    return 'Welcome to API for Shift Well System!'
 
-@app.route('/getPredictedDemand', methods=['GET'])
-def get__demand_home():
-        return "Please input data for demand prediction."
-
-@app.route('/getPredictedDemand', methods=['POST'])
+@app.route('/getPredictedHourlyDemand', methods=['GET'])
 def get_predicted_demand():
         try:
-            data = request.get_json()
-            predict = prediction.predict_shift_default(data)
-            predictOutput = predict
+            predict_daily, predict_hourly = prediction.predict_demand()
+            predictOutput= predict_hourly
+            return {'predict':predictOutput.to_json(orient="split")}
+
+        except Exception as error:
+            return {'error': error}
+        
+@app.route('/getPredictedDailyDemand', methods=['GET'])
+def get_predicted_demand():
+        try:
+            predict_daily, predict_hourly = prediction.predict_demand()
+            predictOutput = predict_daily
             return {'predict':predictOutput.to_json(orient="split")}
 
         except Exception as error:
@@ -54,45 +49,36 @@ def get_schedule_homoe():
         
 @app.route('/getPredictedSchedule/default', methods=['GET','POST'])
 def get_predicted_schedule_default():
-        if request.method == 'POST':
-            try:
-                data = request.get_json()
-                predict = prediction.predict_shift_default(data)
-                predictOutput = predict
-                return {'predict':predictOutput.to_json(orient="split")}
+        try:
+            data = request.get_json()
+            predict = prediction.predict_shift_default(data)
+            predictOutput = predict
+            return {'predict':predictOutput.to_json(orient="split")}
 
-            except Exception as error:
-                return {'error': error}
-        else:
-            return 'The endpoint for default method to predict staff schedules'
+        except Exception as error:
+            return {'error': error}
         
 @app.route('/getPredictedSchedule/economic', methods=['GET','POST'])
 def get_predicted_schedule_economic():
-        if request.method == 'POST':
-            try:
-                data = request.get_json()
-                predict = prediction.predict_shift_economic(data)
-                predictOutput = predict
-                return {'predict':predictOutput.to_json(orient="split")}
+        try:
+            data = request.get_json()
+            predict = prediction.predict_shift_economic(data)
+            predictOutput = predict
+            return {'predict':predictOutput.to_json(orient="split")}
 
-            except Exception as error:
-                return {'error': error}
-        else:
-            return 'The endpoint for economic method to predict staff schedules'
-                
+        except Exception as error:
+            return {'error': error}
+        
 @app.route('/getPredictedSchedule/quality', methods=['GET','POST'])
 def get_predicted_schedule_quality():
-        if request.method == 'POST':
-            try:
-                data = request.get_json()
-                predict = prediction.predict_shift_quality(data)
-                predictOutput = predict
-                return {'predict':predictOutput.to_json(orient="split")}
+        try:
+            data = request.get_json()
+            predict = prediction.predict_shift_quality(data)
+            predictOutput = predict
+            return {'predict':predictOutput.to_json(orient="split")}
 
-            except Exception as error:
-                return {'error': error}
-        else:
-            return 'The endpoint for quality method to predict staff schedules'
+        except Exception as error:
+            return {'error': error}
 
 @app.route('/employee', methods=['GET'])
 def get_employee():
