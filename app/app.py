@@ -24,7 +24,7 @@ def home():
     return 'Welcome to API for Shift Well System!'
 
 @app.route('/getPredictedHourlyDemand', methods=['GET'])
-def get_predicted_demand():
+def get_predicted_hourly_demand():
         try:
             predict_daily, predict_hourly = prediction.predict_demand()
             predictOutput= predict_hourly
@@ -34,7 +34,7 @@ def get_predicted_demand():
             return {'error': error}
         
 @app.route('/getPredictedDailyDemand', methods=['GET'])
-def get_predicted_demand():
+def get_predicted_daily_demand():
         try:
             predict_daily, predict_hourly = prediction.predict_demand()
             predictOutput = predict_daily
@@ -44,8 +44,8 @@ def get_predicted_demand():
             return {'error': error}
        
 @app.route('/getPredictedSchedule', methods=['GET'])
-def get_schedule_homoe():
-        return "Welcome to schedule prediction api."
+def get_schedule_home():
+        return "Welcome to schedule prediction API."
         
 @app.route('/getPredictedSchedule/default', methods=['GET','POST'])
 def get_predicted_schedule_default():

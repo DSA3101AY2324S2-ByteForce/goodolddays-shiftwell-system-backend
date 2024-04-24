@@ -89,13 +89,13 @@ def generate_holiday_df(year):
     return holiday_sg_24
 
 def feature_engineering():
-    visitor_data = pd.read_csv("../../data/raw/synthetic_visit_data.csv")
+    visitor_data = pd.read_csv("../data/raw/synthetic_visit_data.csv")
     visitor_data['visit_date'] = pd.to_datetime(visitor_data['visit_date'])
-    weather_data = pd.read_csv("../../data/processed/weather_data_cleaned.csv")
+    weather_data = pd.read_csv("../data/processed/weather_data_cleaned.csv")
     weather_data['Date'] = pd.to_datetime(weather_data['Date'])
     columns_to_drop = weather_data.columns[0:3].tolist()  # Dropping columns by indices
     weather_data.drop(columns=columns_to_drop, inplace=True)
-    holiday_data = pd.read_csv("../../data/raw/date_info_2324.csv")
+    holiday_data = pd.read_csv("../data/raw/date_info_2324.csv")
     holiday_data['calendar_date'] = pd.to_datetime(holiday_data['calendar_date'])
     holiday_data.rename(columns={'calendar_date': 'calender_date'}, inplace=True)
     holiday_data.drop(columns="day_of_week", inplace=True)
@@ -186,6 +186,9 @@ X_predict = prediction_data()
 
 def generate_daily_prediction():
     scaler_y = MinMaxScaler()
+    df = feature_engineering()
+    y = df['visitors']
+    scaler_y.fit_transform(y.values.reshape(-1, 1))
     X_predict_scaled = loaded_scaler.fit_transform(X_predict)
     X_predict_scaled = X_predict_scaled.reshape(X_predict_scaled.shape[0], 1, X_predict_scaled.shape[1])
     prediction_7days = model.predict(X_predict_scaled)

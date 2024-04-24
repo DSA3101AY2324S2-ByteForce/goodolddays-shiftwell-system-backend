@@ -8,3 +8,5 @@ requests
 mysql.connector
 pickle5
 tensorflow
+scipy
+scikit-learn
