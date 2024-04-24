@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const scrapeWeatherData = async () => {
     try {
-        const response = await axios.get('https://www.timeanddate.com/weather/@1880272/hourly');
+        const response = await axios.get('https://www.timeanddate.com/weather/@1880272/ext');
         const html = response.data;
         const $ = cheerio.load(html);
 
@@ -15,7 +15,7 @@ const scrapeWeatherData = async () => {
         let match;
         while ((match = regex.exec(weatherDiv)) !== null) {
             const [
-                time,
+                day,
                 weatherCondition,
                 weatherIcon,
                 temperature,
@@ -24,11 +24,14 @@ const scrapeWeatherData = async () => {
                 wind,
                 humidity,
                 precipitationChance,
-                precipitationAmount
+                precipitationAmount,
+                uv,
+                sunrise,
+                sunset
             ] = match.slice(1);
 
             weatherDetails.push({
-                time,
+                day,
                 weatherCondition,
                 weatherIcon,
                 temperature,
@@ -37,12 +40,15 @@ const scrapeWeatherData = async () => {
                 wind,
                 humidity,
                 precipitationChance,
-                precipitationAmount
+                precipitationAmount,
+                uv,
+                sunrise,
+                sunset
             });
         }
 
         // Save to a JSON file
-        fs.writeFileSync('weather_data.json', JSON.stringify(weatherDetails, null, 2));
+        fs.writeFileSync('next_7_day.json', JSON.stringify(weatherDetails, null, 2));
         
         return weatherDetails;
     } catch (error) {
