@@ -1,6 +1,5 @@
 from tensorflow.keras.models import model_from_json
 # Import necessary libraries
-#import necessary libraries
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -186,9 +185,6 @@ def prediction_data():
 
 X_predict = prediction_data()
 
-# You would need to define weather_data_processing(), generate_holiday_df(), and feature_engineering() properly for this to work.
-X_predict = prediction_data()
-    
 def generate_daily_prediction():
     scaler_y = MinMaxScaler()
     X_predict_scaled = loaded_scaler.fit_transform(X_predict)
