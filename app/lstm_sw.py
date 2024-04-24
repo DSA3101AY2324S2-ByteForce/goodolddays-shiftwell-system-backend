@@ -179,7 +179,7 @@ def prediction_data():
     prediction_df.set_index('date', inplace=True)
     feature_df = feature_engineering()
     prediction_df = pd.merge(prediction_df, feature_df[['visitors_lag_1','visitors_lag_2','visitors_lag_3','visitors_lag_4','visitors_lag_5','visitors_lag_6', 'visitors_lag_7', 'rolling_mean_visitors', 'rolling_std_visitors', 'month', 'day']], on=['month', 'day'], how='left')
-
+    # due to the lack of real life data for the past 7 days, we use the lag data in the model training for the corresponding dates (past 7 days from current date)
     return prediction_df
 
 X_predict = prediction_data()
