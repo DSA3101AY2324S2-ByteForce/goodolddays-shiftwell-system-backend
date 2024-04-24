@@ -2,6 +2,8 @@ from flask import Flask, request, redirect
 from flask_restful import Resource, Api
 from flask_cors import CORS
 from flask import jsonify
+from tensorflow.keras.models import model_from_json
+import pickle
 import os
 import prediction
 import mysql.connector
@@ -18,6 +20,14 @@ conn = mysql.connector.connect(
 
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 api = Api(app)
+
+# Load the LSTM model
+with open('model_architecture.json', 'r') as json_file: # architecture
+    loaded_model_json = json_file.read()
+model = model_from_json(loaded_model_json)
+model.load_weights('model_weights.weights.h5') # weights
+with open('scaler.pkl', 'rb') as scaler_file:
+    loaded_scaler = pickle.load(scaler_file) # scaler
 
 @app.route('/', methods=['GET'])
 def home():

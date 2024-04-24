@@ -3,6 +3,9 @@ import schedule_generator_economic
 import schedule_generator_default
 import schedule_generator_quality
 
+def predict_demand(config):
+    return 0
+
 def predict_shift_economic(config):
 
     if type(config) == list:
