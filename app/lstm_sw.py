@@ -55,7 +55,7 @@ def weather_data_processing():
     return df
 
 def generate_holiday_df(year):
-    import datetime  # Importing datetime module within the function scope
+    import datetime 
     start_date = datetime.date(year, 1, 1)
     end_date = datetime.date(year, 12, 31)
 
@@ -67,7 +67,6 @@ def generate_holiday_df(year):
         datetime.date(year, 10, 31), datetime.date(year, 12, 25)
     ]
 
-    # Dictionary to convert day names to numbers
     day_to_number = {
         'Monday': 1,
         'Tuesday': 2,
@@ -86,10 +85,7 @@ def generate_holiday_df(year):
         holiday_sg_24.append([current_date.strftime('%Y-%m-%d'), day_of_week, holiday_flg_sg])
         current_date += datetime.timedelta(days=1)
 
-    # Create DataFrame
     holiday_sg_24 = pd.DataFrame(holiday_sg_24, columns=['calendar_date', 'day_of_week', 'holiday_flg_sg'])
-
-    # Map day_of_week from name to number
     holiday_sg_24['day_of_week'] = holiday_sg_24['day_of_week'].map(day_to_number)
 
     return holiday_sg_24
@@ -188,12 +184,14 @@ def prediction_data():
 
     return prediction_df
 
-# You would need to define weather_data_processing(), generate_holiday_df(), and feature_engineering() properly for this to work.
 X_predict = prediction_data()
 
+# You would need to define weather_data_processing(), generate_holiday_df(), and feature_engineering() properly for this to work.
+X_predict = prediction_data()
+    
 def generate_daily_prediction():
     scaler_y = MinMaxScaler()
-    X_predict_scaled = loaded_scaler.transform(X_predict)
+    X_predict_scaled = loaded_scaler.fit_transform(X_predict)
     X_predict_scaled = X_predict_scaled.reshape(X_predict_scaled.shape[0], 1, X_predict_scaled.shape[1])
     prediction_7days = model.predict(X_predict_scaled)
     prediction_7days_inv = scaler_y.inverse_transform(prediction_7days)
@@ -220,13 +218,13 @@ def simulate_hourly_arrival(predicted_daily_visitors):
     visitor_counts_1 = visitor_counts_1 / visitor_counts_1.max()  # Normalize to [0, 1]
     visitor_counts_2 = visitor_counts_2 / visitor_counts_2.max()
     
-    visitor_counts_1 = np.round(visitor_counts_1 * predicted_daily_visitors * 0.6 / visitor_counts_1.sum()).astype(int)
-    visitor_counts_2 = np.round(visitor_counts_2 * predicted_daily_visitors * 0.4 / visitor_counts_2.sum()).astype(int)
+    visitor_counts_1 = np.round(visitor_counts_1 * predicted_daily_visitors * 0.4 / visitor_counts_1.sum()).astype(int)
+    visitor_counts_2 = np.round(visitor_counts_2 * predicted_daily_visitors * 0.6 / visitor_counts_2.sum()).astype(int)
     
     hourly_counts = np.concatenate((visitor_counts_1, visitor_counts_2), axis=None)
     return time_intervals_strings, hourly_counts
 
-def generate_and_merge_hourly_data(prediction_7days):
+def generate_hourly_data(prediction_7days):
     output_df = pd.DataFrame(columns=['date', 'time', 'estimated_arrival_count'])
 
     for idx, row in prediction_7days.iterrows():
