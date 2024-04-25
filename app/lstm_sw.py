@@ -179,7 +179,7 @@ def prediction_data():
     prediction_df.set_index('date', inplace=True)
     feature_df = feature_engineering()
     prediction_df = pd.merge(prediction_df, feature_df[['visitors_lag_1','visitors_lag_2','visitors_lag_3','visitors_lag_4','visitors_lag_5','visitors_lag_6', 'visitors_lag_7', 'rolling_mean_visitors', 'rolling_std_visitors', 'month', 'day']], on=['month', 'day'], how='left')
-    # due to the lack of real life data for the past 7 days, we use the lag data in the model training for the corresponding dates (past 7 days from current date)
+
     return prediction_df
 
 X_predict = prediction_data()
@@ -236,3 +236,27 @@ def generate_hourly_data(prediction_7days):
 
     output_df['date'] = pd.to_datetime(output_df['date']).dt.date
     return output_df
+
+
+
+def predicted_demand_data_processing(hourly_output):
+    df = hourly_output.copy()
+    shift_mapper = {"8:00" :"Morning", "9:00" :"Morning", "10:00" :"Morning", "11:00" :"Morning", "12:00" :"Morning",
+              "13:00" :"Morning", "14:00" :"Afternoon", "15:00" :"Afternoon", "17:00" :"Afternoon", "18:00" :"Afternoon", 
+              "19:00" :"Evening", "20:00" :"Evening", "21:00" :"Evening", "22:00" :"Evening", "23:00" :"Evening"}
+    year = df['date'].dt.year.unique()[0]
+    holidays_sg = [
+        datetime.date(year, 1, 1), datetime.date(year, 2, 10), datetime.date(year, 2, 11),
+        datetime.date(year, 3, 29), datetime.date(year, 4, 10), datetime.date(year, 5, 1),
+        datetime.date(year, 5, 20), datetime.date(year, 6, 17), datetime.date(year, 8, 9),
+        datetime.date(year, 10, 31), datetime.date(year, 12, 25)
+    ]
+    df['shift'] = df['time'].map(shift_mapper)
+    df['day'] = pd.to_datetime(df['date'])
+    df['flg_is_ph'] = np.where(df['day'].isin(holidays_sg), 1, 0)
+
+    grouped_df = df.groupby(['day', 'shift'])['visitors_count_by_shift'].sum().reset_index()
+    grouped_df['day_of_week'] = grouped_df['day'].dt.isoweekday()
+    return grouped_df
+    
+    

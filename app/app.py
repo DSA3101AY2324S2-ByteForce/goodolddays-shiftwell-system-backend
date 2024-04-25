@@ -47,33 +47,30 @@ def get_predicted_daily_demand():
 def get_schedule_home():
         return "Welcome to schedule prediction API."
         
-@app.route('/getPredictedSchedule/default', methods=['GET','POST'])
+@app.route('/getPredictedSchedule/default', methods=['GET'])
 def get_predicted_schedule_default():
         try:
-            data = request.get_json()
-            predict = prediction.predict_shift_default(data)
+            predict = prediction.predict_shift_default()
             predictOutput = predict
             return {'predict':predictOutput.to_json(orient="split")}
 
         except Exception as error:
             return {'error': error}
         
-@app.route('/getPredictedSchedule/economic', methods=['GET','POST'])
+@app.route('/getPredictedSchedule/economic', methods=['GET'])
 def get_predicted_schedule_economic():
         try:
-            data = request.get_json()
-            predict = prediction.predict_shift_economic(data)
+            predict = prediction.predict_shift_economic()
             predictOutput = predict
             return {'predict':predictOutput.to_json(orient="split")}
 
         except Exception as error:
             return {'error': error}
         
-@app.route('/getPredictedSchedule/quality', methods=['GET','POST'])
+@app.route('/getPredictedSchedule/quality', methods=['GET'])
 def get_predicted_schedule_quality():
         try:
-            data = request.get_json()
-            predict = prediction.predict_shift_quality(data)
+            predict = prediction.predict_shift_quality()
             predictOutput = predict
             return {'predict':predictOutput.to_json(orient="split")}
 
