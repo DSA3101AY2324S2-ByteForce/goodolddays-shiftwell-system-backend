@@ -248,7 +248,7 @@ def predicted_demand_data_processing(hourly_output):
     df['shift'] = df['time'].map(shift_mapper)
     grouped_df = df.groupby(['date', 'shift'])['estimated_arrival_count'].sum().reset_index()
     grouped_df['demand'] = grouped_df['estimated_arrival_count'].apply(lambda x: 3 if  x < 100 else max(3, x//50+1))
-    year = datetime.datetime.now().year 
+    year = datetime.now().year 
     ph = generate_holiday_df(year)
     grouped_df['date'] = grouped_df['date'].astype(str)
     ## rename calendar_date to date
